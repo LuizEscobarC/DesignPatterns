@@ -1,0 +1,25 @@
+{
+  "name": "luizpaulo/luiz",
+  "description": "Patterns",
+  "minimum-stability": "stable",
+  "authors": [
+    {
+      "name": "Luiz Paulo",
+      "email": "luiz_escobar11@hotmail.com",
+      "role": "Developer"
+    }
+  ],
+  "config": {
+    "vendor-dir": "vendor"
+  },
+  "autoload": {
+    "psr-4": {
+      "Source\\": "Source/"
+    }
+  },
+  "require": {
+    "php": ">=8.2",
+    "ext-pdo": ">=8.2",
+    "ext-json": "*"
+  }
+}
