@@ -39,14 +39,13 @@ $callbackResolver = [
     '+' => function ($left, $right) {
         return new Sum($left, $right);
     },
-    '-' => function ($left, $right) {        
+    '-' => function ($left, $right) {
         return new Subtraction($left, $right);
     }
 ];
 
-// a cada o operador (+-/*) é encapsulado a uma classe de interpreter com base
-// no lado direto e esquerdo(number ou objeto de expressão já encapsulado)
-function expressionArrayResolver(int &$i, array &$arrayExpressions, array $callbackResolver, string $expression) 
+// a cada o operador (+-/*) é encapsulado a uma classe de interpreter com base no lado direto e esquerdo(number ou objeto de expressão já encapsulado)
+function expressionArrayResolver(int &$i, array &$arrayExpressions, array $callbackResolver, string $expression)
 {
 
     $theLastLeftUselessOperand = $arrayExpressions[$i - 1];
@@ -62,26 +61,26 @@ function expressionArrayResolver(int &$i, array &$arrayExpressions, array $callb
     // encapsula com interpreter, reindexa e retira o que já foi
     // utilizado no array
     $arrayExpressions[$i + 1] = $callbackResolver[$expression](
-                                        $theLastLeftUselessOperand,
-                                        $rightOperand
-                                    );
+        $theLastLeftUselessOperand,
+        $rightOperand
+    );
     unset($arrayExpressions[$i], $arrayExpressions[$i - 1]);
 }
 
-function expressionWrapperByImportance(&$arrayExpressions, $callbackResolver) 
+function expressionWrapperByImportance(&$arrayExpressions, $callbackResolver)
 {
 
     $i = 0;
     // percorre operador por operador encapsulando por interpretador
     // adiciona a expressão incapsulada no lugar do operando do operando
     // da direita e retira do array o operador e o operador do lado esquerdo
-    foreach($arrayExpressions as $expression) {
+    foreach ($arrayExpressions as $expression) {
         // se for importante é separado e retirado do array
         if (in_array($expression, ['*', '/'])) {
-           if (is_numeric($expression) || is_object($expression)) {
+            if (is_numeric($expression) || is_object($expression)) {
                 $i++;
                 continue;
-           }
+            }
 
             // se for a ultima expressão quer dizer que a expressão
             // a penultima expressão já encapsulou o numero esquerdo 
@@ -96,7 +95,7 @@ function expressionWrapperByImportance(&$arrayExpressions, $callbackResolver)
                 unset($arrayExpressions[$i], $arrayExpressions[$i - 1]);
                 break;
             }
-            
+
 
             expressionArrayResolver($i, $arrayExpressions, $callbackResolver, $expression);
         }
@@ -125,6 +124,3 @@ function expressionWrapperByImportance(&$arrayExpressions, $callbackResolver)
 $finalExpression = expressionWrapperByImportance($arithmetic, $callbackResolver);
 
 echo $finalExpression->interpret();
- 
-
-
