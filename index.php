@@ -44,84 +44,85 @@ $callbackResolver = [
     }
 ];
 
-function importantSeparatorExpressions(&$arrayExpression, $callbackResolver) {
+// a cada o operador (+-/*) é encapsulado a uma classe de interpreter com base
+// no lado direto e esquerdo(number ou objeto de expressão já encapsulado)
+function expressionArrayResolver(int &$i, array &$arrayExpressions, array $callbackResolver, string $expression) 
+{
+
+    $theLastLeftUselessOperand = $arrayExpressions[$i - 1];
+    if (!$arrayExpressions[$i - 1] instanceof IInterpreter) {
+        $theLastLeftUselessOperand = new Number($arrayExpressions[$i - 1]);
+    }
+
+    $rightOperand = $arrayExpressions[$i + 1];
+    if (!$arrayExpressions[$i + 1] instanceof IInterpreter) {
+        $rightOperand = new Number($arrayExpressions[$i + 1]);
+    }
+
+    // encapsula com interpreter, reindexa e retira o que já foi
+    // utilizado no array
+    $arrayExpressions[$i + 1] = $callbackResolver[$expression](
+                                        $theLastLeftUselessOperand,
+                                        $rightOperand
+                                    );
+    unset($arrayExpressions[$i], $arrayExpressions[$i - 1]);
+}
+
+function expressionWrapperByImportance(&$arrayExpressions, $callbackResolver) 
+{
 
     $i = 0;
-    foreach($arrayExpression as $expression) {
+    // percorre operador por operador encapsulando por interpretador
+    // adiciona a expressão incapsulada no lugar do operando do operando
+    // da direita e retira do array o operador e o operador do lado esquerdo
+    foreach($arrayExpressions as $expression) {
         // se for importante é separado e retirado do array
         if (in_array($expression, ['*', '/'])) {
-            // o que importa aqui é o operador
-            if (is_numeric($expression)) {
+           if (is_numeric($expression) || is_object($expression)) {
                 $i++;
                 continue;
-            }
+           }
 
-            if (empty($arrayExpression[$i + 2])) {
-                $theLastUselessOperand = $arrayExpression[$i - 1];
-                $rightOperand = new Number($arrayExpression[$i + 1]);
-                $arrayExpression[$i + 1] = $callbackResolver[$expression](
-                    $theLastUselessOperand,
+            // se for a ultima expressão quer dizer que a expressão
+            // a penultima expressão já encapsulou o numero esquerdo 
+            // dessa expressao com interpreter
+            if (empty($arrayExpressions[$i + 2])) {
+                $theLastLeftUselessOperand = $arrayExpressions[$i - 1];
+                $rightOperand = new Number($arrayExpressions[$i + 1]);
+                $arrayExpressions[$i + 1] = $callbackResolver[$expression](
+                    $theLastLeftUselessOperand,
                     $rightOperand
                 );
-                unset($arrayExpression[$i], $arrayExpression[$i - 1]);
+                unset($arrayExpressions[$i], $arrayExpressions[$i - 1]);
                 break;
             }
             
 
-            $theLastUselessOperand = $arrayExpression[$i - 1];
-        if (!$arrayExpression[$i - 1] instanceof IInterpreter) {
-            $theLastUselessOperand = new Number($arrayExpression[$i - 1]);
+            expressionArrayResolver($i, $arrayExpressions, $callbackResolver, $expression);
         }
-
-        $rightOperand = $arrayExpression[$i + 1];
-        if (!$arrayExpression[$i + 1] instanceof IInterpreter) {
-            $rightOperand = new Number($arrayExpression[$i + 1]);
-        }
-
-            $arrayExpression[$i + 1] = $callbackResolver[$expression](
-                                                $theLastUselessOperand,
-                                                $rightOperand
-                                            );
-            unset($arrayExpression[$i], $arrayExpression[$i - 1]);
-
-        }
-
         $i++;
     }
 
-    // REINDEXANDO
-    $arrayExpression = array_values($arrayExpression);
+    // reidexa o array para encapsular as expressões menos importantes
+    $arrayExpressions = array_values($arrayExpressions);
 
     $i = 0;
-    foreach ($arrayExpression as $expression) {
+    // encapsula as expressoes já encapsuladas com as operações menos importantes (+-) 
+    foreach ($arrayExpressions as $expression) {
         if (is_numeric($expression) || is_object($expression)) {
             $i++;
             continue;
         }
 
-        $theLastUselessOperand = $arrayExpression[$i - 1];
-        if (!$arrayExpression[$i - 1] instanceof IInterpreter) {
-            $theLastUselessOperand = new Number($arrayExpression[$i - 1]);
-        }
+        expressionArrayResolver($i, $arrayExpressions, $callbackResolver, $expression);
 
-        $rightOperand = $arrayExpression[$i + 1];
-        if (!$arrayExpression[$i + 1] instanceof IInterpreter) {
-            $rightOperand = new Number($arrayExpression[$i + 1]);
-        }
-
-        $arrayExpression[$i + 1] = $callbackResolver[$expression](
-                                            $theLastUselessOperand,
-                                            $rightOperand
-                                        );
-        unset($arrayExpression[$i], $arrayExpression[$i - 1]);
-
-        $i++;                                   
+        $i++;
     }
 
-    return end($arrayExpression);
+    return end($arrayExpressions);
 };
 
-$finalExpression = importantSeparatorExpressions($arithmetic, $callbackResolver);
+$finalExpression = expressionWrapperByImportance($arithmetic, $callbackResolver);
 
 echo $finalExpression->interpret();
  
