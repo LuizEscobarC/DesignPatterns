@@ -12,18 +12,12 @@ use Source\Interpreter\Sum;
 
 require __DIR__ . '/vendor/autoload.php';
 
-// QUEBRA A STRING E SEPARA CADA OPERADOR E NUMERO
+echo "PHP resolver normal output =  " . (12 + 2 * 2 + 2 * 2 - 2 * 2 - 1 / 2 + 5 / 1 + 2 + 12 / 2 * 2 / 500);
+echo PHP_EOL;
+echo PHP_EOL;
+echo "My result with design pattern interpreter =  ";
+
 $arithmetic = "12 + 2 * 2 + 2 * 2 - 2 * 2 - 1 / 2 + 5 / 1 + 2 + 12 / 2 * 2 / 500";
-
-// m(2,2)
-// s(m(*2,2))
-//
-
-
-echo "Normal resolver result by PHP  =  " . (12 + 2 * 2 + 2 * 2 - 2 * 2 - 1 / 2 + 5 / 1 + 2 + 12 / 2 * 2 / 500);
-echo PHP_EOL;
-echo PHP_EOL;
-echo "My result in interpreter resolver result  =  ";
 $arithmetic = str_replace([')', '('], '', $arithmetic);
 $arithmetic = explode(' ', $arithmetic);
 $callbackResolver = [
