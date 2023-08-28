@@ -24,11 +24,8 @@ echo "Normal resolver result by PHP  =  " . (12 + 2 * 2 + 2 * 2 - 2 * 2 - 1 / 2 
 echo PHP_EOL;
 echo PHP_EOL;
 echo "My result in interpreter resolver result  =  ";
-
-
 $arithmetic = str_replace([')', '('], '', $arithmetic);
 $arithmetic = explode(' ', $arithmetic);
-
 $callbackResolver = [
     '*' => function ($left, $right) {
         return new Multiplication($left, $right);
@@ -43,6 +40,9 @@ $callbackResolver = [
         return new Subtraction($left, $right);
     }
 ];
+
+$finalExpression = expressionWrapperByImportance($arithmetic, $callbackResolver);
+echo $finalExpression->interpret();
 
 // a cada o operador (+-/*) é encapsulado a uma classe de interpreter com base no lado direto e esquerdo(number ou objeto de expressão já encapsulado)
 function expressionArrayResolver(int &$i, array &$arrayExpressions, array $callbackResolver, string $expression)
@@ -121,6 +121,4 @@ function expressionWrapperByImportance(&$arrayExpressions, $callbackResolver)
     return end($arrayExpressions);
 };
 
-$finalExpression = expressionWrapperByImportance($arithmetic, $callbackResolver);
 
-echo $finalExpression->interpret();
